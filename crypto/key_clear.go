@@ -1,22 +1,28 @@
 package crypto
 
 import (
-	"crypto/dsa" //nolint:staticcheck
+	"crypto/dsa"
 	"crypto/rsa"
 	"errors"
 	"math/big"
 
 	"github.com/ProtonMail/go-crypto/openpgp/ecdh"
 	"github.com/ProtonMail/go-crypto/openpgp/ecdsa"
+	"github.com/ProtonMail/go-crypto/openpgp/ed25519"
+	"github.com/ProtonMail/go-crypto/openpgp/ed448"
 	"github.com/ProtonMail/go-crypto/openpgp/eddsa"
 	"github.com/ProtonMail/go-crypto/openpgp/elgamal"
+	"github.com/ProtonMail/go-crypto/openpgp/x25519"
+	"github.com/ProtonMail/go-crypto/openpgp/x448"
 )
 
+// Clear zeroes the sensitive data in the session key.
 func (sk *SessionKey) Clear() (ok bool) {
 	clearMem(sk.Key)
 	return true
 }
 
+// ClearPrivateParams zeroes the sensitive data in the key.
 func (key *Key) ClearPrivateParams() (ok bool) {
 	num := key.clearPrivateWithSubkeys()
 	key.entity.PrivateKey = nil
@@ -61,6 +67,14 @@ func clearPrivateKey(privateKey interface{}) error {
 		return clearEdDSAPrivateKey(priv)
 	case *ecdh.PrivateKey:
 		return clearECDHPrivateKey(priv)
+	case *x25519.PrivateKey:
+		return clearX25519PrivateKey(priv)
+	case *ed25519.PrivateKey:
+		return clearEd25519PrivateKey(priv)
+	case *x448.PrivateKey:
+		return clearX448PrivateKey(priv)
+	case *ed448.PrivateKey:
+		return clearEd448PrivateKey(priv)
 	default:
 		return errors.New("gopenpgp: unknown private key")
 	}
@@ -123,6 +137,30 @@ func clearEdDSAPrivateKey(priv *eddsa.PrivateKey) error {
 
 func clearECDHPrivateKey(priv *ecdh.PrivateKey) error {
 	clearMem(priv.D)
+
+	return nil
+}
+
+func clearX25519PrivateKey(priv *x25519.PrivateKey) error {
+	clearMem(priv.Secret)
+
+	return nil
+}
+
+func clearEd25519PrivateKey(priv *ed25519.PrivateKey) error {
+	clearMem(priv.Key[:ed25519.SeedSize])
+
+	return nil
+}
+
+func clearX448PrivateKey(priv *x448.PrivateKey) error {
+	clearMem(priv.Secret)
+
+	return nil
+}
+
+func clearEd448PrivateKey(priv *ed448.PrivateKey) error {
+	clearMem(priv.Key[:ed448.SeedSize])
 
 	return nil
 }

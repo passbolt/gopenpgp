@@ -4,6 +4,102 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] – 2025-04-11
+### Added
+- Enhanced AEAD session key API for RFC 9580.
+
+### Changed
+- Bumped minimum supported Go version to **1.22.0**.
+- Upgraded `go-crypto` fork to **v1.2.0**.
+
+## [3.1.3] 2025-02-27
+### Changed
+- Update go-crypto fork to `1.1.6`.
+
+## [3.1.2] 2025-01-15
+### Changed
+- Update go-crypto fork to `1.1.5`.
+
+## [3.1.1] 2025-01-07
+### Changed
+- Update go-crypto fork to `1.1.4`.
+
+## [3.1.0] 2024-11-25
+### Added
+- Add decryption option to allow disabling the integrity tag requirement.
+- Add option to decrypt with signature keys for legacy messages.
+
+### Changed
+- Rename `profile.Custom.AllowWeakRSA` to `profile.Custom.InsecureAllowWeakRSA`
+- Update go-crypto to `1.1.3`.
+
+## [3.0.0] 2024-10-07
+### Changed
+- Remove `Name` field from profile.
+- Remove signature rejection logic based on hash (handled by go-crypto).
+- Update go-crypto to `1.1.0`.
+
+## [3.0.0-beta.0] 2024-10-01
+### Added
+- Add `GetSHA256Fingerprint` method to `Key`.
+
+### Changed
+- Update go-crypto to `1.1.0-beta.0`.
+
+## [3.0.0-alpha.4] 2024-07-18
+### Changed
+- Update go-crypto to `1.1.0-alpha.4`.
+- Remove logic to get a profile by name. 
+- Reduce preset profiles to `Default`, `RFC4880`, and `RFC9580`.
+- Update go-crypto to check signature details of binding signatures.
+
+## [3.0.0-alpha.3] 2024-06-25
+### Added
+- API to armor data with the option to remove the checksum 
+
+### Changed
+- All armor functions append a checksum per default for compatibility with certain libraries although the crypto-refresh advises not to. 
+- `Encryption` and `Sign` handle now append a checksum when armoring. If the produced OpenPGP packets are crypto-refresh packets, the checksum is not appended as mandated by the crypto-refresh.
+
+## [3.0.0-alpha.2] 2024-04-12
+### Added
+- API to serialize KeyRings to binary data:
+	```go
+	func (keyRing *KeyRing) Serialize() ([]byte, error)
+	```
+- API to parse KeyRings from binary data:
+	```go
+	func NewKeyRingFromBinary(binKeys []byte) (*KeyRing, error)
+	```
+- API to a create/verify plaintext detached signatures on the encryption/decryption handle instead of just encrypted detached signatures.
+
+## [3.0.0-alpha.1] 2024-03-20
+### Added
+- Allow to override algorithm in key generation
+- Always create a verification result on signature verification
+
+### Changed
+- Update ProtonMail/go-crypto to 1.1.0-alpha.2
+
+## [3.0.0-alpha.0] 2024-01-18
+### Added
+- New simplified API that is not backward compatible.
+- Full support for RFC 9580.
+- Improved interoperability with other OpenPGP libraries.
+- Streaming support for all operations.
+- Introduces profiles for OpenPGP customization.
+- More documentation and examples.
+
+### Changed
+- Mobile specific code is moved to the `mobile` package.
+- Mime specific code is moved to the `mime` package.
+- Replaces the go-crypto v1 API with the v2 API.
+
+### Removed
+- The `helper` package, use the crypto package with the new API instead.
+- `subtle` and `models` package.
+- Time management code for retrieving and setting timestamps.
+
 ## [2.7.5] 2023-31-01
 
 ### Added
@@ -29,7 +125,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ensure that `(SessionKey).Decrypt` functions return an error if no integrity protection is present in the encrypted input. To protect SEIPDv1 encrypted messages, SED packets must not be allowed in decryption.
   
 ## [2.7.3] 2023-08-28
-## Added
+### Added
 - Add `helper.QuickCheckDecrypt` function to the helper package. The function allows to check with high probability if a session key can decrypt a SEIPDv1 data packet given its 24-byte prefix.
 
 ## [2.7.2] 2023-07-17
