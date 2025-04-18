@@ -73,7 +73,7 @@ build()
 	mkdir -p $TARGET_DIR
 	printf "${green}Start Building ${TARGET} .. Location: ${TARGET_DIR} ${reset}\n\n"
 	remove_dir $TARGET_OUT_FILE
-	./gomobile bind -tags $TAGS -target $TARGET $JAVAPKG_FLAG -x -ldflags="-s -w " -o ${TARGET_OUT_FILE}  ${PACKAGES}
+	./gomobile bind -tags $TAGS -target $TARGET -androidapi 29 $JAVAPKG_FLAG -x -ldflags="-s -w " -o ${TARGET_OUT_FILE}  ${PACKAGES}
 }
 
 # import function, add internal package in the build
