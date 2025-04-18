@@ -4,69 +4,19 @@ import (
 	"time"
 )
 
-// UpdateTime updates cached time, new time has to be after previously set or will be ignored otherwise.
-// Calling this function will cause time used in all crypto operations to be constant equal to provided.
-func UpdateTime(newTime int64) {
-	pgp.lock.Lock()
-	defer pgp.lock.Unlock()
+// Clock is a function that returns a timestamp.
+type Clock func() time.Time
 
-	if pgp.fixedTime < newTime {
-		pgp.fixedTime = newTime
+// NewConstantClock returns a Clock, which always returns unixTime.
+func NewConstantClock(unixTime int64) Clock {
+	return func() time.Time {
+		return time.Unix(unixTime, 0)
 	}
 }
 
-// SetTimeOffset updates time offset used for crypto operations.
-// Offset will be applied to all crypto operations unless fixed time is used.
-func SetTimeOffset(newOffset int64) {
-	pgp.lock.Lock()
-	defer pgp.lock.Unlock()
-
-	pgp.timeOffset = newOffset
-}
-
-// SetKeyGenerationOffset updates the offset when generating keys.
-func SetKeyGenerationOffset(offset int64) {
-	pgp.lock.Lock()
-	defer pgp.lock.Unlock()
-
-	pgp.generationOffset = offset
-}
-
-// GetUnixTime gets latest cached time.
-func GetUnixTime() int64 {
-	return GetTime().Unix()
-}
-
-// GetTime gets latest cached time.
-func GetTime() time.Time {
-	pgp.lock.RLock()
-	defer pgp.lock.RUnlock()
-
-	if pgp.fixedTime == 0 {
-		return time.Unix(time.Now().Unix()+pgp.timeOffset, 0)
+// ZeroClock returns a Clock, which always returns the zero time.Time.
+func ZeroClock() Clock {
+	return func() time.Time {
+		return time.Time{}
 	}
-
-	return time.Unix(pgp.fixedTime, 0)
-}
-
-// ----- INTERNAL FUNCTIONS -----
-
-// setFixedTime sets fixed pgp time
-func setFixedTime(newTime int64) {
-	pgp.lock.Lock()
-	defer pgp.lock.Unlock()
-
-	pgp.fixedTime = newTime
-}
-
-// getKeyGenerationTime returns the current time with the key generation offset.
-func getKeyGenerationTime() time.Time {
-	pgp.lock.RLock()
-	defer pgp.lock.RUnlock()
-
-	if pgp.fixedTime == 0 {
-		return time.Unix(time.Now().Unix()+pgp.generationOffset+pgp.timeOffset, 0)
-	}
-
-	return time.Unix(pgp.fixedTime+pgp.generationOffset, 0)
 }
