@@ -1,4 +1,4 @@
-image: registry.gitlab.com/passbolt/passbolt-ci-docker-images/android-gopenpgp:latest
+image: $CI_REGISTRY_IMAGE/android-gopenpgp:latest
 
 default:
   retry:
@@ -10,8 +10,25 @@ default:
       - stale_schedule
 
 stages:
+  - Build image
   - Test
   - Build
+
+Build docker image:
+  stage: Build image
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - >
+      /kaniko/executor --context $CI_PROJECT_DIR
+      --dockerfile $CI_PROJECT_DIR/Dockerfile
+      --destination $CI_REGISTRY_IMAGE/android-gopenpgp:latest
+  rules:
+    - changes:
+        - Dockerfile
+      when: always
 
 Run unit tests:
   stage: Test

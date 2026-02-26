@@ -1,15 +1,15 @@
-FROM golang:1.23
+FROM golang:1.26.0
 
 ENV ANDROID_HOME="/usr/local/android-sdk" \
     ANDROID_SDK_ROOT="/usr/local/android-sdk" \
-    ANDROID_VERSION=34 \
+    ANDROID_VERSION=36 \
     ANDROID_BUILD_TOOLS_VERSION="36.0.0" \
     ANDROID_SDK_TOOLS_VERSION="13114758" \
-    ANDROID_NDK_VERSION=29.0.13113456
+    ANDROID_NDK_VERSION="29.0.14206865"
 
 # install system dependencies
 RUN apt-get update && \
-    apt-get install -y wget unzip openjdk-17-jdk
+    apt-get install -y wget unzip openjdk-21-jdk
 
 # setup android home path for moving the downloaded sdk into it
 RUN install -d $ANDROID_HOME
