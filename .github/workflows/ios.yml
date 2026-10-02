@@ -6,26 +6,28 @@ on:
   pull_request:
     branches: [ main, v3 ]
 
+permissions: {}
+
 jobs:
   build:
     name: Build library for iOS with gomobile
     runs-on: macos-latest
 
     steps:
-      - name: Set up xcode 15.3.0
+      - name: Set up xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: 15.3.0
+          xcode-version: 26.0.1
         id: xcode
 
       - name: Set up Go 1.x
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v6
         with:
           go-version: ^1.16
         id: go
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Build
         env:
@@ -35,7 +37,7 @@ jobs:
           find dist
 
       - name: Upload xcframework
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gopenpgp.xcframework
           path: dist/apple/gopenpgp.xcframework

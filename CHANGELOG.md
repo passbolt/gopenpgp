@@ -4,6 +4,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.5.2] – 2026-09-30
+### Fixed
+- Fixed compression tests for Go 1.27.
+
+## [3.5.1] – 2026-09-29
+### Added
+- Post-quantum (PQC) key support: clearing of ML-KEM, ML-DSA and SLH-DSA private keys.
+- `profile.PQC()` preset for generating post-quantum keys (ML-DSA+EdDSA / ML-KEM+ECDH).
+
+## [3.5.0] – 2026-09-28
+### Fixed
+- Improved robustness against malicious input
+
+### Changed
+- Update go-crypto to `1.5.2`.
+
+## [3.4.1] – 2026-04-29
+### Fixed
+- Fixed EOF behavior of the verification Reader after first `io.EOF`.
+
+## [3.4.0] – 2026-03-18
+### Added
+- `InsecureAllowAllKeyFlagsWhenMissing` profile option. Allows usage of keys without key flags.
+
+### Changed
+- Upgraded `go-crypto` fork to **v1.4.1**.
+
+## [3.3.0] – 2025-05-23
+### Added
+- MaxDecompressedSize option to control the maximum size of decompressed messages.
+
+### Changed
+- Upgraded `go-crypto` fork to **v1.3.0**.
+
+## [3.2.1] – 2025-05-05
+### Fixed
+- Avoid double compression in session key signcryption.
+
 ## [3.2.0] – 2025-04-11
 ### Added
 - Enhanced AEAD session key API for RFC 9580.

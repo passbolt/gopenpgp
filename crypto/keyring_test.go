@@ -1,13 +1,18 @@
 package crypto
 
 import (
+	"bytes"
 	"crypto/rsa"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/ProtonMail/go-crypto/openpgp/ecdh"
 	"github.com/ProtonMail/go-crypto/openpgp/eddsa"
+	"github.com/ProtonMail/go-crypto/openpgp/packet"
+	openpgp "github.com/ProtonMail/go-crypto/openpgp/v2"
 )
 
 var testSymmetricKey []byte
@@ -114,6 +119,22 @@ func TestFilterExpiredKeys(t *testing.T) {
 	assert.Exactly(t, unexpired[0].GetKeyIDs(), keyRingTestPrivate.GetKeyIDs())
 }
 
+func TestFilterExpiredKeysNoValidSubkeyBinding(t *testing.T) {
+	// Generate a key whose self-signatures (including the subkey binding) expired.
+	past := time.Now().Add(-48 * time.Hour)
+	config := &packet.Config{Time: func() time.Time { return past }, SigLifetimeSecs: 60}
+	entity, err := openpgp.NewEntity("expired", "", "expired@example.com", config)
+	require.NoError(t, err)
+	var serialized bytes.Buffer
+	require.NoError(t, entity.Serialize(&serialized))
+	keyRing, err := NewKeyRingFromBinary(serialized.Bytes())
+	require.NoError(t, err)
+
+	unexpired, err := FilterExpiredKeys([]*KeyRing{keyRing})
+	require.Error(t, err)
+	assert.Empty(t, unexpired)
+}
+
 func TestKeyIds(t *testing.T) {
 	keyIDs := keyRingTestPrivate.GetKeyIDs()
 	var assertKeyIDs = []uint64{4518840640391470884}
@@ -121,11 +142,11 @@ func TestKeyIds(t *testing.T) {
 }
 
 func TestMultipleKeyRing(t *testing.T) {
-	assert.Exactly(t, 3, len(keyRingTestMultiple.entities))
+	assert.Len(t, keyRingTestMultiple.entities, 3)
 	assert.Exactly(t, 3, keyRingTestMultiple.CountEntities())
 	assert.Exactly(t, 3, keyRingTestMultiple.CountDecryptionEntities(testTime))
 
-	assert.Exactly(t, 3, len(keyRingTestMultiple.GetKeys()))
+	assert.Len(t, keyRingTestMultiple.GetKeys(), 3)
 
 	testKey, err := keyRingTestMultiple.GetKey(1)
 	if err != nil {
@@ -134,28 +155,31 @@ func TestMultipleKeyRing(t *testing.T) {
 	assert.Exactly(t, keyTestEC, testKey)
 
 	_, err = keyRingTestMultiple.GetKey(3)
-	assert.NotNil(t, err)
+	require.Error(t, err)
+
+	_, err = keyRingTestMultiple.GetKey(-1)
+	require.Error(t, err)
 
 	singleKeyRing, err := keyRingTestMultiple.FirstKey()
 	if err != nil {
 		t.Fatal("Expected no error while filtering the first key, got:", err)
 	}
-	assert.Exactly(t, 1, len(singleKeyRing.entities))
+	assert.Len(t, singleKeyRing.entities, 1)
 	assert.Exactly(t, 1, singleKeyRing.CountEntities())
 	assert.Exactly(t, 1, singleKeyRing.CountDecryptionEntities(testTime))
 }
 
 func TestSerializeParse(t *testing.T) {
 	serialized, err := keyRingTestMultiple.Serialize()
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	parsed, err := NewKeyRingFromBinary(serialized)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
-	assert.Exactly(t, 3, len(parsed.GetKeys()))
+	assert.Len(t, parsed.GetKeys(), 3)
 	for i, parsedKey := range parsed.GetKeys() {
 		expectedKey, err := keyRingTestMultiple.GetKey(i)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 		assert.Exactly(t, parsedKey.GetFingerprint(), expectedKey.GetFingerprint())
 	}
 }
@@ -167,7 +191,7 @@ func TestClearPrivateKey(t *testing.T) {
 	}
 
 	for _, key := range keyRingCopy.GetKeys() {
-		assert.Nil(t, clearPrivateKey(key.entity.PrivateKey.PrivateKey))
+		require.NoError(t, clearPrivateKey(key.entity.PrivateKey.PrivateKey))
 	}
 
 	keys := keyRingCopy.GetKeys()
